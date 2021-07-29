@@ -27,6 +27,16 @@ import { installTestNotIsolatedHook } from './test-isolation-validation';
 
 let waitForSettled = true;
 
+import deprecationsInclude from './asserts/deprecations-include';
+import deprecations from './asserts/deprecations';
+import noDeprecations from './asserts/no-depreactions';
+
+export function setup(assert) {
+  assert.deprecationsInclude = deprecationsInclude;
+  assert.deprecations = deprecations;
+  assert.noDeprecations = noDeprecations;
+}
+
 export function setupTest(hooks, _options) {
   let options =
     _options === undefined
