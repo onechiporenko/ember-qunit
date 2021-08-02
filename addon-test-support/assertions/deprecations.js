@@ -1,12 +1,11 @@
 import { getDeprecationsDuringCallback } from '@ember/test-helpers';
-import toAssertionMessage from './utils/to-assertion-message';
 
 export default async function deprecations(callback, expectedDeprecations) {
   const maybeThenable = getDeprecationsDuringCallback(callback);
 
   const operation = (deprecations) => {
     this.deepEqual(
-      deprecations.map(toAssertionMessage),
+      deprecations.map(deprecation => deprecation.message),
       expectedDeprecations,
       'Expected deprecations during test.'
     );

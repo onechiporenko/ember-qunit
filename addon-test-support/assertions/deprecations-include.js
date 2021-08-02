@@ -1,8 +1,8 @@
 import { getDeprecations } from '@ember/test-helpers';
-import toAssertionMessage from './utils/to-assertion-message';
 
 export default function deprecationsInclude(expected) {
-  const deprecations = getDeprecations().map(toAssertionMessage);
+  const deprecations = getDeprecations().map(deprecation => deprecation.message);
+
   this.pushResult({
     result: deprecations.indexOf(expected) > -1,
     actual: deprecations,

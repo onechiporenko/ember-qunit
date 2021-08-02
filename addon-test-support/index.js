@@ -29,12 +29,21 @@ let waitForSettled = true;
 
 import deprecationsInclude from './asserts/deprecations-include';
 import deprecations from './asserts/deprecations';
-import noDeprecations from './asserts/no-depreactions';
+import noDeprecations from './asserts/no-deprecations';
+import expectDeprecation from './asserts/expect-deprecation';
+import expectNoRunloop from './asserts/expect-no-runloop';
+import expectWarning from './asserts/expect-warning';
 
 export function setup(assert) {
+  // TODO: decide which of these we should keep, which depreacte and which drop.
   assert.deprecationsInclude = deprecationsInclude;
   assert.deprecations = deprecations;
+  assert.expectNoDeprecations = noDeprecations; // compat
   assert.noDeprecations = noDeprecations;
+  assert.expectDeprecation = expectDeprecation; // compat
+  assert.expectNoRunloop = expectNoRunloop; // compat but fixed name
+  // around for compat
+  assert.exepectNoRunLoop = expectNoRunloop; // compat but wrong camelization
 }
 
 export function setupTest(hooks, _options) {
