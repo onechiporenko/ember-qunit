@@ -1,21 +1,21 @@
-import {
-  getDeprecationsDuringCallback,
-  getDeprecations,
-} from '@ember/test-helpers';
 import checkMatcher from './utils/check-matcher';
+import {
+  getDeprecations,
+  getDeprecationsDuringCallback,
+} from '@ember/test-helpers';
 
-export default function expectDeprecation(cb, matcher) {
+export default function expectNoDeprecation(cb, matcher) {
   const test = (deprecations, matcher) => {
     const matchedDeprecations = deprecations.filter((deprecation) => {
       return checkMatcher(deprecation.message, matcher);
     });
 
     this.pushResult({
-      result: matchedDeprecations.length !== 0,
+      result: matchedDeprecations.length === 0,
       actual: matchedDeprecations,
-      expected: null,
+      expected: [],
       message:
-        'Expected deprecations during test, but no deprecations were found.',
+        'Expected no deprecations during test, but deprecations were found.',
     });
   };
 

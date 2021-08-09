@@ -27,19 +27,18 @@ import { installTestNotIsolatedHook } from './test-isolation-validation';
 
 let waitForSettled = true;
 
-import deprecationsInclude from './asserts/deprecations-include';
-import deprecations from './asserts/deprecations';
-import noDeprecations from './asserts/no-deprecations';
-import expectDeprecation from './asserts/expect-deprecation';
-import expectNoRunloop from './asserts/expect-no-runloop';
-import expectWarning from './asserts/expect-warning';
-
-export function setup(assert) {
+import deprecationsInclude from './assertions/deprecations-include';
+import deprecations from './assertions/deprecations';
+import expectNoDeprecation from './assertions/expect-no-deprecation';
+import expectDeprecation from './assertions/expect-deprecation';
+import expectNoRunloop from './assertions/expect-no-runloop';
+// import expectWarning from './assertions/expect-warning';
+//
+export function setupAsserts(assert) {
   // TODO: decide which of these we should keep, which depreacte and which drop.
   assert.deprecationsInclude = deprecationsInclude;
   assert.deprecations = deprecations;
-  assert.expectNoDeprecations = noDeprecations; // compat
-  assert.noDeprecations = noDeprecations;
+  assert.expectNoDeprecation = expectNoDeprecation;
   assert.expectDeprecation = expectDeprecation; // compat
   assert.expectNoRunloop = expectNoRunloop; // compat but fixed name
   // around for compat
@@ -239,6 +238,10 @@ export function start(options = {}) {
 
   if (options.startTests !== false) {
     startTests();
+  }
+
+  if (options.setupAssertAdditions !== false) {
+    setupAsserts(QUnit.assert);
   }
 
   setupResetOnerror();

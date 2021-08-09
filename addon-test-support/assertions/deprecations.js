@@ -5,7 +5,7 @@ export default async function deprecations(callback, expectedDeprecations) {
 
   const operation = (deprecations) => {
     this.deepEqual(
-      deprecations.map(deprecation => deprecation.message),
+      deprecations.map((deprecation) => deprecation.message),
       expectedDeprecations,
       'Expected deprecations during test.'
     );

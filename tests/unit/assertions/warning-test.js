@@ -1,150 +1,381 @@
 import { module, test } from 'qunit';
 import expectWarning from 'ember-qunit/assertions/expect-warning';
-import { warn } from '@ember/warn';
+import expectNoWarning from 'ember-qunit/assertions/expect-no-warning';
+import { warn } from '@ember/debug';
 
+import { setupTest } from 'ember-qunit';
 // ............................................................
 // Warning outside of a test. Should not cause test failures.
-warn('Warning outside of a test', false, { id: 'warning-test', until: '3.0.0' });
+warn('Warning outside of a test', false, {
+  id: 'warning-test',
+  until: '3.0.0',
+});
 // ............................................................
 
-module('expectWarning', function() {
+module('expectWarning', function (hooks) {
   let mockAssert;
+  setupTest(hooks);
 
   hooks.beforeEach(() => {
     mockAssert = {
       pushedResults: [],
+      pushResult(results) {
+        this.pushedResults.push(results);
+      },
       expectWarning,
     };
   });
 
-  test('expectWarning called after test and with warning', function(assert) {
+  test('called after test and with warning', function (assert) {
     warn('Something warned', false, { id: 'warning-test', until: '3.0.0' });
 
     mockAssert.expectWarning();
 
-    assert.ok(mockAssert.pushedResults[0].result, '`expectWarning` captured warning call');
+    assert.deepEqual(mockAssert.pushedResults.pop(), {
+      actual: [
+        {
+          message: 'Something warned',
+          options: {
+            id: 'warning-test',
+            until: '3.0.0',
+          },
+        },
+      ],
+      expected: null,
+      message: 'Expected warnings during test, but no warnings were found.',
+      result: true,
+    });
   });
 
-  test('expectWarning called after test and without warning', function(assert) {
+  test('called after test and without warning', function (assert) {
     mockAssert.expectWarning();
 
-    assert.notOk(mockAssert.pushedResults[0].result, '`expectWarning` logged failed result');
+    assert.deepEqual(mockAssert.pushedResults.pop(), {
+      actual: [],
+      expected: null,
+      message: 'Expected warnings during test, but no warnings were found.',
+      result: false,
+    });
   });
 
-  test('expectWarning called with callback and with warning', function(assert) {
+  test('called with callback and with warning', function (assert) {
     mockAssert.expectWarning(() => {
       warn('Something warned', false, { id: 'warning-test', until: '3.0.0' });
     });
 
-    assert.ok(mockAssert.pushedResults[0].result, '`expectWarning` captured warning call');
+    assert.deepEqual(mockAssert.pushedResults.pop(), {
+      actual: [
+        {
+          message: 'Something warned',
+          options: {
+            id: 'warning-test',
+            until: '3.0.0',
+          },
+        },
+      ],
+      expected: null,
+      message: 'Expected warnings during test, but no warnings were found.',
+      result: true,
+    });
   });
 
-  test('expectWarning called with callback and without warning', function(assert) {
-    mockAssert.expectWarning(() => { });
+  test('called with callback and without warning', function (assert) {
+    mockAssert.expectWarning(() => {});
 
-    assert.notOk(mockAssert.pushedResults[0].result, '`expectWarning` logged failed result');
+    assert.deepEqual(mockAssert.pushedResults.pop(), {
+      actual: [],
+      expected: null,
+      message: 'Expected warnings during test, but no warnings were found.',
+      result: false,
+    });
   });
 
-  test('expectWarning called with callback and after test', function(assert) {
+  test('called with callback and after test', function (assert) {
     mockAssert.expectWarning(() => {
       warn('Something warned', false, { id: 'warning-test', until: '3.0.0' });
     });
 
+    assert.deepEqual(mockAssert.pushedResults.pop(), {
+      actual: [
+        {
+          message: 'Something warned',
+          options: {
+            id: 'warning-test',
+            until: '3.0.0',
+          },
+        },
+      ],
+      expected: null,
+      message: 'Expected warnings during test, but no warnings were found.',
+      result: true,
+    });
+
     mockAssert.expectWarning();
 
-    assert.ok(mockAssert.pushedResults[0].result, 'first `expectWarning` captured warning call');
-    assert.notOk(mockAssert.pushedResults[1].result, 'second `expectWarning` logged failed result');
+    assert.deepEqual(mockAssert.pushedResults.pop(), {
+      actual: [
+        {
+          message: 'Something warned',
+          options: {
+            id: 'warning-test',
+            until: '3.0.0',
+          },
+        },
+      ],
+      expected: null,
+      message: 'Expected warnings during test, but no warnings were found.',
+      result: true,
+    });
   });
 
-  test('expectWarning called after test, with matcher and matched warning', function(assert) {
+  test('called after test, with matcher and matched warning', function (assert) {
     warn('Something warned', false, { id: 'warning-test', until: '3.0.0' });
 
     mockAssert.expectWarning(/Something warned/);
 
-    assert.ok(mockAssert.pushedResults[0].result, '`expectWarning` captured warning call');
+    assert.deepEqual(mockAssert.pushedResults.pop(), {
+      actual: [
+        {
+          message: 'Something warned',
+          options: {
+            id: 'warning-test',
+            until: '3.0.0',
+          },
+        },
+      ],
+      expected: null,
+      message: 'Expected warnings during test, but no warnings were found.',
+      result: true,
+    });
   });
 
-  test('expectWarning called after test, with matcher and unmatched warning', function(assert) {
+  test('called after test, with matcher and unmatched warning', function (assert) {
     warn('Something warned', false, { id: 'warning-test', until: '3.0.0' });
 
     mockAssert.expectWarning(/different warning/);
 
-    assert.notOk(mockAssert.pushedResults[0].result, '`expectWarning` logged failed result');
+    assert.notOk(
+      mockAssert.pushedResults[0].result,
+      '`expectWarning` logged failed result'
+    );
   });
 
-  test('expectWarning called with callback, matcher and matched warning', function(assert) {
+  test('called with callback, matcher and matched warning', function (assert) {
     mockAssert.expectWarning(() => {
       warn('Something warned', false, { id: 'warning-test', until: '3.0.0' });
     }, /Something warned/);
 
-    assert.ok(mockAssert.pushedResults[0].result, '`expectWarning` captured warning call');
+    assert.deepEqual(mockAssert.pushedResults.pop(), {
+      actual: [
+        {
+          message: 'Something warned',
+          options: {
+            id: 'warning-test',
+            until: '3.0.0',
+          },
+        },
+      ],
+      expected: null,
+      message: 'Expected warnings during test, but no warnings were found.',
+      result: true,
+    });
   });
 
-  test('expectWarning called with callback, matcher and unmatched warning', function(assert) {
+  test('called with callback, matcher and unmatched warning', function (assert) {
     mockAssert.expectWarning(() => {
       warn('Something warned', false, { id: 'warning-test', until: '3.0.0' });
     }, /different warning/);
 
-    assert.notOk(mockAssert.pushedResults[0].result, '`expectWarning` logged failed result');
-  });
-
-  test('expectNoWarning called after test and without warning', function(assert) {
-    assert.expectNoWarning();
-    assert.ok(mockAssert.pushedResults[0].result, '`expectNoWarning` caught no warning');
-  });
-
-  test('expectNoWarning called after test and with warning', function(assert) {
-    warn('Something warned', false, { id: 'warning-test', until: '3.0.0' });
-
-    assert.expectNoWarning();
-    assert.notOk(mockAssert.pushedResults[0].result, '`expectNoWarning` caught logged failed result');
-  });
-
-  test('expectNoWarning called with callback and with warning', function(assert) {
-    assert.expectNoWarning(() => {
-      warn('Something warned', false, { id: 'warning-test', until: '3.0.0' });
+    assert.deepEqual(mockAssert.pushedResults.pop(), {
+      actual: [],
+      expected: null,
+      message: 'Expected warnings during test, but no warnings were found.',
+      result: false,
     });
-    assert.notOk(mockAssert.pushedResults[0].result, '`expectNoWarning` caught logged failed result');
   });
 
-  test('expectNoWarning called with callback and without warning', function(assert) {
-    assert.expectNoWarning(() => { });
-    assert.ok(mockAssert.pushedResults[0].result, '`expectNoWarning` caught no warning');
-  });
-
-  test('expectNoWarning called with callback and after test', function(assert) {
-    assert.expectNoWarning(() => {
-      warn('Something warned', false, { id: 'warning-test', until: '3.0.0' });
-    });
-
-    assert.expectNoWarning();
-    assert.notOk(mockAssert.pushedResults[0].result, 'first `expectNoWarning` caught logged failed result');
-    assert.ok(mockAssert.pushedResults[1].result, 'second `expectNoWarning` caught no warning');
-  });
-
-  test('expectWarning with regex matcher', function(assert) {
+  test('with regex matcher', function (assert) {
     mockAssert.expectWarning(() => {
       warn('Something warned', false, { id: 'warning-test', until: '3.0.0' });
     }, /Somethi[a-z ]*rned/);
 
+    assert.deepEqual(mockAssert.pushedResults.pop(), {
+      actual: [
+        {
+          message: 'Something warned',
+          options: {
+            id: 'warning-test',
+            until: '3.0.0',
+          },
+        },
+      ],
+      expected: null,
+      message: 'Expected warnings during test, but no warnings were found.',
+      result: true,
+    });
+
     mockAssert.expectWarning(() => {
-      Ember.deprecate('/Something* warned/', false, { id: 'warning-test', until: '3.0.0' });
+      warn('/Something* warned/', false, {
+        id: 'warning-test',
+        until: '3.0.0',
+      });
     }, /Something* warned/);
 
-    assert.ok(mockAssert.pushedResults[0].result, '`expectWarning` matched RegExp');
-    assert.notOk(mockAssert.pushedResults[1].result, '`expectWarning` didn\'t RegExp as String match');
+    assert.deepEqual(mockAssert.pushedResults.pop(), {
+      actual: [],
+      expected: null,
+      message: 'Expected warnings during test, but no warnings were found.',
+      result: false,
+    });
   });
 
-  test('expectWarning with string matcher', function(assert) {
+  test('with string matcher', function (assert) {
     mockAssert.expectWarning(() => {
       warn('Something warned', false, { id: 'warning-test', until: '3.0.0' });
     }, 'Something');
+
+    assert.deepEqual(mockAssert.pushedResults.pop(), {
+      actual: [
+        {
+          message: 'Something warned',
+          options: {
+            id: 'warning-test',
+            until: '3.0.0',
+          },
+        },
+      ],
+      expected: null,
+      message: 'Expected warnings during test, but no warnings were found.',
+      result: true,
+    });
 
     mockAssert.expectWarning(() => {
       warn('Something warned', false, { id: 'warning-test', until: '3.0.0' });
     }, 'Something.*');
 
-    assert.ok(mockAssert.pushedResults[0].result, '`expectWarning` captured warning for partial string match');
-    assert.notOk(mockAssert.pushedResults[1].result, '`expectWarning` didn\'t test a string match as RegExp');
+    assert.deepEqual(mockAssert.pushedResults.pop(), {
+      actual: [],
+      expected: null,
+      message: 'Expected warnings during test, but no warnings were found.',
+      result: false,
+    });
+  });
+});
+
+module('expectNoWarning', function (hooks) {
+  let mockAssert;
+  setupTest(hooks);
+
+  hooks.beforeEach(() => {
+    mockAssert = {
+      pushedResults: [],
+      pushResult(results) {
+        this.pushedResults.push(results);
+      },
+      expectNoWarning,
+    };
+  });
+
+  test('expectNoWarning called after test and without warning', function (assert) {
+    mockAssert.expectNoWarning();
+
+    assert.deepEqual(mockAssert.pushedResults.pop(), {
+      actual: [],
+      expected: [],
+      message: 'Expected no warnings during test, but warnings were found.',
+      result: true,
+    });
+  });
+
+  test('expectNoWarning called after test and with warning', function (assert) {
+    warn('Something warned', false, { id: 'warning-test', until: '3.0.0' });
+
+    mockAssert.expectNoWarning();
+
+    assert.deepEqual(mockAssert.pushedResults.pop(), {
+      actual: [
+        {
+          message: 'Something warned',
+          options: {
+            id: 'warning-test',
+            until: '3.0.0',
+          },
+        },
+      ],
+      expected: [],
+      message: 'Expected no warnings during test, but warnings were found.',
+      result: false,
+    });
+  });
+
+  test('expectNoWarning called with callback and with warning', function (assert) {
+    mockAssert.expectNoWarning(() => {
+      warn('Something warned', false, { id: 'warning-test', until: '3.0.0' });
+    });
+
+    assert.deepEqual(mockAssert.pushedResults.pop(), {
+      actual: [
+        {
+          message: 'Something warned',
+          options: {
+            id: 'warning-test',
+            until: '3.0.0',
+          },
+        },
+      ],
+      expected: [],
+      message: 'Expected no warnings during test, but warnings were found.',
+      result: false,
+    });
+  });
+
+  test('expectNoWarning called with callback and without warning', function (assert) {
+    mockAssert.expectNoWarning(() => {});
+
+    assert.deepEqual(mockAssert.pushedResults.pop(), {
+      actual: [],
+      expected: [],
+      message: 'Expected no warnings during test, but warnings were found.',
+      result: true,
+    });
+  });
+
+  test('expectNoWarning called with callback and after test', function (assert) {
+    mockAssert.expectNoWarning(() => {
+      warn('Something warned', false, { id: 'warning-test', until: '3.0.0' });
+    });
+
+    assert.deepEqual(mockAssert.pushedResults.pop(), {
+      actual: [
+        {
+          message: 'Something warned',
+          options: {
+            id: 'warning-test',
+            until: '3.0.0',
+          },
+        },
+      ],
+      expected: [],
+      message: 'Expected no warnings during test, but warnings were found.',
+      result: false,
+    });
+
+    // TODO: sHould this pass or fail?
+    mockAssert.expectNoWarning();
+
+    assert.deepEqual(mockAssert.pushedResults.pop(), {
+      actual: [
+        {
+          message: 'Something warned',
+          options: {
+            id: 'warning-test',
+            until: '3.0.0',
+          },
+        },
+      ],
+      expected: [],
+      message: 'Expected no warnings during test, but warnings were found.',
+      result: false,
+    });
   });
 });
